@@ -12,6 +12,7 @@ The domain implemented is a **Learning Management System (LMS)** containing cour
 ## Images
 ![Query Performance](docs/Screenshot_10-2-2026_61110_127.0.0.1.jpeg)
 ![Query Performance](docs/Screenshot_9-2-2026_6545_127.0.0.1.jpeg)
+
 ---
 ## Data Model (ERD Concept)
 
