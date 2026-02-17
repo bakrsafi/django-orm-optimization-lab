@@ -1,0 +1,35 @@
+version: '3'
+
+
+services:
+  django:
+    container_name: django
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - '8000:8000'
+    volumes:
+      - .:/app
+  
+  redis:
+    image: redis:latest
+    container_name: redis
+
+  celery:
+    container_name: celery
+    build: .
+    command: celery -A advanced_django_orm_lab worker -l info
+    restart: always
+    depends_on:
+      - redis
+
+  flower:
+    build: .
+    command: celery -A advanced_django_orm_lab.celery flower --port=5555 --broker=redis://redis:6379/0
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+      - celery
+    volumes:
+      - .:/app

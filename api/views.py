@@ -5,20 +5,31 @@ from .models import Course ,Category, Instructor, Lesson, Module
 from .serializers import CourseSerializer, LessonSerializer, CourseCurriculumSerializer
 from django.db.models import Count, Prefetch
 from django.shortcuts import get_object_or_404
-
-
+import time
+from django.core.cache import cache
 class ListCourses(APIView):
 
     def get(self, request):
+        cache_key = "courses:list:v1"
+        cached_data = cache.get(cache_key)
+        if cached_data is not None:
+            return Response(cached_data)
+
         queryset = Course.objects.select_related(
-        'category', 'instructor', 'instructor__user'
+            'category', 'instructor', 'instructor__user'
         ).annotate(
             number_of_modules=Count('modules', distinct=True),
             number_of_lessons=Count('modules__lessons', distinct=True),
             total_video_duration=Count('modules__lessons__resources', distinct=True),
             number_of_students=Count('enrollments', distinct=True)
-        )  
+        )
+
         serializer = CourseSerializer(queryset, many=True)
+        data = serializer.data   # ← هنا تعريف المتغير
+
+        # 3) خزّن النتيجة
+        cache.set(cache_key, data, timeout=60 * 10)
+
         return Response(serializer.data)
 
 class CoursesDetails(APIView):
@@ -91,3 +102,12 @@ class CourseCurriculum(APIView):
 
         serializer = CourseCurriculumSerializer(course)
         return Response(serializer.data)
+    
+    
+from .tasks import send
+
+
+
+def page(request):
+    send.delay("Hello World")
+    return render(request,'api/index.html')

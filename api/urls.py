@@ -1,4 +1,4 @@
-
+from . import views
 
 
 from django.urls import path
@@ -9,6 +9,7 @@ urlpatterns = [
     path('courses/<slug:slug>/',CourseCurriculum.as_view()),
     path('lessons/',ListLesson.as_view()),
     path('lessons/<int:id>/',LessonDetails.as_view()),
+    path('', views.page, name='pages')
 
 
 ]

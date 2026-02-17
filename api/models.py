@@ -81,15 +81,33 @@ class Enrollment(models.Model):
     class Meta:
         unique_together = ('user', 'course')
         indexes = [models.Index(fields=['course', 'user'])]
+        
+        
+# apps/orders/models.py
+from django.db import models
 
-class Session(models.Model):
-    # live session (for Live/Workshop option)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sessions')
-    start = models.DateTimeField()
-    end = models.DateTimeField()
-    capacity = models.PositiveIntegerField(default=100)
+class Product(models.Model):
+    name = models.CharField(max_length=120)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.PositiveIntegerField()
 
-class Quiz(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='quizzes')
-    title = models.CharField(max_length=255)
-    max_score = models.IntegerField(default=100)
+
+class Order(models.Model):
+
+    class Status(models.TextChoices):
+        PENDING = "pending"
+        STOCK_RESERVED = "stock_reserved"
+        PAID = "paid"
+        FAILED = "failed"
+        SHIPPED = "shipped"
+
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    quantity = models.PositiveIntegerField()
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
